@@ -66,6 +66,13 @@ def train_qlearning_full(env, agent, episodes=5000):
         rewards.append(total_reward)
         usages.append(env.usedCI_count)
         safeties.append(safe)
+        
+        #에피소드 진행도에 따라 epsilon_min 조정
+        if ep > episodes * 0.8:
+            agent.epsilon_min = 0.01  #80% 이상 진행 시 1%로 제한
+        elif ep > episodes * 0.5:
+            agent.epsilon_min = 0.05  #50% 이상 진행 시 5%로 제한
+
         agent.decay_epsilon()
         
         # if (ep+1) % 100 == 0:

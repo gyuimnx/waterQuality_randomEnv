@@ -65,7 +65,7 @@ class WaterParkEnv:
             residualCI += (ci_to_add / 10.0) * 0.2 
             #자원 소모 패널티
             # reward -= 0.1 * ci_to_add
-            reward_resource -= 0.4 * ci_to_add
+            reward_resource -= 0.1 * ci_to_add
             
             #탁도 감소(염소가 탁도를 어느정도 낮춘다고 가정, 10kg당 0.2 감소)
             turbidity -= ci_to_add * 0.2
@@ -120,13 +120,16 @@ class WaterParkEnv:
         elif residualCI < 0.4:
             reward_ci -= (0.4 - residualCI) *5.0
         else:
-            reward_ci += 0.2
+            if 0.7 <= residualCI <= 1.2:
+                reward_ci += 0.7  #이상적인 범위
+            else:
+                reward_ci += 0.3  #그 외 정상 범위
 
         #탁도 패널티
         if turbidity > 2.8:
             reward_turb -= (turbidity - 2.8) *4.0
         else:
-            reward_turb += 0.2
+            reward_turb += 0.3
 
         #pH 패널티
         if ph > 8.6:
@@ -134,7 +137,7 @@ class WaterParkEnv:
         elif ph < 5.8:
             reward_ph -= (5.8 - ph) *5.0
         else:
-            reward_ph += 0.2
+            reward_ph += 0.3
 
         #자원 초과 사용 패널티
         if self.usedCI_count > self.max_ci:
