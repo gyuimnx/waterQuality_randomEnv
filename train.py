@@ -20,7 +20,7 @@ def run_policy_full(env, policy, quantize=False, episodes=5000):
             if state[0] > 0.5 or state[1] > 2.8 or state[2] < 5.8 or state[2] > 8.6:
                 safe = False
         #에피소드 종료 후 남은 자원 기반 보너스
-        bonus = 0.1 * state[3]   #state[3] = remaining_ci
+        bonus = 0.2 * state[3]   #state[3] = remaining_ci
         rewards += bonus
         total_rewards.append(rewards)
         usage_counts.append(env.usedCI_count)
