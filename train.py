@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from env import WaterParkEnv
-from agent import QAgent, FixedIntervalPolicy, quantize_state
+from agent import QAgent, FixedIntervalPolicy, RandomPolicy, quantize_state
 
 def run_policy_full(env, policy, quantize=False, episodes=5000):
     total_rewards, usage_counts, safeties = [], [], []
@@ -100,9 +100,13 @@ if __name__ == "__main__":
     #Q-러닝 학습, epsilon 0.1로 시작, decay로 점차 감소
     q_agent = QAgent(epsilon=0.3, epsilon_decay=0.999, epsilon_min=0.001)
     fixed_policy = FixedIntervalPolicy()
+    random_policy = RandomPolicy()
 
     #Fixed Policy
-    fixed_rewards, fixed_usage, fixed_safety = run_policy_full(env, fixed_policy, quantize=False, episodes=3000) #3000에피소드
+    fixed_rewards, fixed_usage, fixed_safety = run_policy_full(env, fixed_policy, quantize=False, episodes=3000) 
+    
+    #Random Policy
+    random_rewards, random_usage, random_safety = run_policy_full(env, random_policy, quantize=False, episodes=3000)
 
     #Q-Learning
     q_rewards, q_usage, q_safety, reward_parts_log, state_log = train_qlearning_full(env, q_agent, episodes=3000)
@@ -113,7 +117,8 @@ if __name__ == "__main__":
     plt.subplot(1, 2, 1)
     plt.plot(moving_average(fixed_rewards), label="Fixed Policy")
     plt.plot(moving_average(q_rewards), label="Q-Learning")
-    # plt.plot(moving_average(greedy_rewards), label="Greedy Policy")
+    plt.plot(moving_average(random_rewards), label="Random Policy")
+    
     plt.title("Policy Performance Comparison")
     plt.ylabel("Mean Total Reward (Moving Average)")
     plt.legend()
@@ -122,7 +127,8 @@ if __name__ == "__main__":
     plt.subplot(1, 2, 2)
     plt.plot(moving_average(fixed_usage), label="Fixed Policy")
     plt.plot(moving_average(q_usage), label="Q-Learning")
-    # plt.plot(moving_average(greedy_usage), label="Greedy Policy")
+    plt.plot(moving_average(random_usage), label="Random Policy")
+    
     plt.ylim(0, 210)
     plt.title("Resource Usage Comparison")
     plt.ylabel("Chlorine Usage (kg, Moving Average)")

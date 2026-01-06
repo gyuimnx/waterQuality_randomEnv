@@ -131,5 +131,15 @@ class FixedIntervalPolicy:
             return 1  #5kg(수질이 좋을 때 유지)
 
 class RandomPolicy:
+    def __init__(self):
+        self.interval = 3 #30분(3스텝) 주기 설정
+
     def choose_action(self, state):
-        return random.choice([0, 1])
+        _, _, _, _, current_step = state #현재 스텝 정보
+        
+        #주기가 아니면 아무것도 안 함(0kg)
+        if int(current_step) % self.interval != 0:
+            return 0
+        
+        #주기일 때만 4가지 액션 중 랜덤 선택
+        return random.randint(0, 3)
