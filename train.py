@@ -123,8 +123,10 @@ if __name__ == "__main__":
     plt.plot(moving_average(fixed_usage), label="Fixed Policy")
     plt.plot(moving_average(q_usage), label="Q-Learning")
     # plt.plot(moving_average(greedy_usage), label="Greedy Policy")
+    plt.ylim(0, 210)
     plt.title("Resource Usage Comparison")
     plt.ylabel("Chlorine Usage (kg, Moving Average)")
+    plt.legend()
 
     plt.tight_layout()
     plt.show()
