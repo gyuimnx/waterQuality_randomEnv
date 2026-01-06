@@ -62,30 +62,28 @@ class WaterParkEnv:
             remaining_ci -= ci_to_add
             self.usedCI_count += ci_to_add
             #염소 투입 시 잔류염소 증가(10kg당 0.2mg 가정)
-            residualCI += (ci_to_add / 10.0) * 0.2 
+            residualCI += (ci_to_add / 10.0) * 0.2
             #자원 소모 패널티
             # reward -= 0.1 * ci_to_add
             reward_resource -= 0.1 * ci_to_add
             
-            #탁도 감소(염소가 탁도를 어느정도 낮춘다고 가정, 10kg당 0.2 감소)
-            turbidity -= ci_to_add * 0.2
+            #탁도 감소(염소가 탁도를 어느정도 낮춘다고 가정, 10kg당 0.1 감소)
+            turbidity -= ci_to_add * 0.1
             #ph는 7.2를 기준으로 조정(ph 조절 약품으로 조절한다고 가정)
-            if ph < 7.2:
-                ph += ci_to_add * 0.1 #7.2보다 낮으면 올림
-            elif ph > 7.2:
-                ph -= ci_to_add * 0.1 #7.2보다 높으면 내림
-            #ph == 7.2 인 경우 변화 없음
+            if ph < 5.7:
+                ph += ci_to_add * 0.15 #5.8보다 낮으면 올림
+            elif ph > 8.5:
+                ph -= ci_to_add * 0.15 #8.6보다 높으면 내림
+            #ph가 정상범위인 경우 변화 없음
         else:
-            #남은 염소 부족 패널티(이거 바꿀 예정)
-            # reward -= 0.2
-            reward_resource -= 0.2
+            reward_resource -= 0.2 #자원 부족 패널티
         
         #추가한거-----------------------------
         #정상 수질 보상
         if 0.4 <= residualCI <= 2.0 and turbidity <= 2.8 and 5.8 <= ph <= 8.6:
             reward_quality += 0.3
         else:
-            reward_quality -= 0.1
+            reward_quality -= 1.0
         
         #오염 증가(인원 유입/스탭마다)
         hour = 9 + (int(current_step) * 10) // 60
@@ -97,9 +95,9 @@ class WaterParkEnv:
 
         #자연 복원(환경 회복)
         turbidity -= random.uniform(0.1, 0.3)  #입자 가라앉음
-        if ph > 7.2:  #염기성에서 산성
+        if ph > 8.5:  #염기성에서 산성
             ph -= random.uniform(0.01, 0.05)
-        elif ph < 7.2:  #산성에서 염기성
+        elif ph < 5.7:  #산성에서 염기성
             ph += random.uniform(0.01, 0.05)
 
         #음수 방지
@@ -114,24 +112,24 @@ class WaterParkEnv:
         # else:
         #     reward -= 0.2
             
-        #잔류염소 패널티
+        #잔류염소 보상
         if residualCI > 2.0:
-            reward_ci -= (residualCI - 2.0) *5.0
+            reward_ci -= (residualCI - 2.0) *20.0
         elif residualCI < 0.4:
-            reward_ci -= (0.4 - residualCI) *5.0
+            reward_ci -= (0.4 - residualCI) *20.0
         else:
             if 0.7 <= residualCI <= 1.2:
                 reward_ci += 0.7  #이상적인 범위
             else:
                 reward_ci += 0.3  #그 외 정상 범위
 
-        #탁도 패널티
+        #탁도 보상
         if turbidity > 2.8:
             reward_turb -= (turbidity - 2.8) *4.0
         else:
             reward_turb += 0.3
 
-        #pH 패널티
+        #pH 보상
         if ph > 8.6:
             reward_ph -= (ph - 8.6) *5.0
         elif ph < 5.8:
