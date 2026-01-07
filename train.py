@@ -101,12 +101,16 @@ if __name__ == "__main__":
     q_agent = QAgent(epsilon=0.3, epsilon_decay=0.999, epsilon_min=0.001)
     fixed_policy = FixedIntervalPolicy()
     random_policy = RandomPolicy()
+    greedy_agent = QAgent(gamma=0.0, epsilon=0.3, epsilon_decay=0.999, epsilon_min=0.001)
 
     #Fixed Policy
     fixed_rewards, fixed_usage, fixed_safety = run_policy_full(env, fixed_policy, quantize=False, episodes=3000) 
     
     #Random Policy
     random_rewards, random_usage, random_safety = run_policy_full(env, random_policy, quantize=False, episodes=3000)
+    
+    #Greedy Policy
+    greedy_rewards, greedy_usage, greedy_safety, _, _ = train_qlearning_full(env, greedy_agent, episodes=3000) #일단 추가
 
     #Q-Learning
     q_rewards, q_usage, q_safety, reward_parts_log, state_log = train_qlearning_full(env, q_agent, episodes=3000)
@@ -116,8 +120,9 @@ if __name__ == "__main__":
     #전체 리워드(왼쪽)
     plt.subplot(1, 2, 1)
     plt.plot(moving_average(fixed_rewards), label="Fixed Policy")
-    plt.plot(moving_average(q_rewards), label="Q-Learning")
     plt.plot(moving_average(random_rewards), label="Random Policy")
+    plt.plot(moving_average(greedy_rewards), label="Greedy Policy(Gamma=0)") #일단 추가
+    plt.plot(moving_average(q_rewards), label="Q-Learning")
     
     plt.title("Policy Performance Comparison")
     plt.ylabel("Mean Total Reward (Moving Average)")
@@ -126,8 +131,9 @@ if __name__ == "__main__":
     #자원 소모량(오른쪽)
     plt.subplot(1, 2, 2)
     plt.plot(moving_average(fixed_usage), label="Fixed Policy")
-    plt.plot(moving_average(q_usage), label="Q-Learning")
     plt.plot(moving_average(random_usage), label="Random Policy")
+    plt.plot(moving_average(greedy_usage), label="Greedy Policy(Gamma=0)") #일단 추가
+    plt.plot(moving_average(q_usage), label="Q-Learning")
     
     plt.ylim(0, 210)
     plt.title("Resource Usage Comparison")

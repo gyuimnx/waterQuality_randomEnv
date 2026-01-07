@@ -70,9 +70,9 @@ class WaterParkEnv:
             #탁도 감소(염소가 탁도를 어느정도 낮춘다고 가정, 10kg당 0.1 감소)
             turbidity -= ci_to_add * 0.1
             #ph는 7.2를 기준으로 조정(ph 조절 약품으로 조절한다고 가정)
-            if ph < 5.7:
+            if ph < 6.2:
                 ph += ci_to_add * 0.15 #5.8보다 낮으면 올림
-            elif ph > 8.5:
+            elif ph > 8.2:
                 ph -= ci_to_add * 0.15 #8.6보다 높으면 내림
             #ph가 정상범위인 경우 변화 없음
         else:
@@ -95,9 +95,9 @@ class WaterParkEnv:
 
         #자연 복원(환경 회복)
         turbidity -= random.uniform(0.1, 0.3)  #입자 가라앉음
-        if ph > 8.5:  #염기성에서 산성
+        if ph > 8.2:  #염기성에서 산성
             ph -= random.uniform(0.01, 0.05)
-        elif ph < 5.7:  #산성에서 염기성
+        elif ph < 6.2:  #산성에서 염기성
             ph += random.uniform(0.01, 0.05)
 
         #음수 방지
