@@ -72,7 +72,7 @@ def quantize_state(state):
     return (residualCI_state, turbidity_state, ph_state, remaining_ci_state, time_state)
 
 class QAgent:
-    def __init__(self, state_shape=(3,2,3,10,3), n_actions=5, alpha=0.1, gamma=0.95, epsilon=0.1, epsilon_decay=0.0, epsilon_min=0.05): #n_action : 0kg, 5kg, 15kg, 25kg, 50kg
+    def __init__(self, state_shape=(3,2,3,10,3), n_actions=5, alpha=0.1, gamma=0.95, epsilon=0.1, epsilon_decay=0.0, epsilon_min=0.05): #n_action : 0kg, 5kg, 15kg, 25kg, 35kg
         self.state_shape = state_shape
         self.n_actions = n_actions
         self.Q_table = np.zeros(state_shape + (n_actions,))

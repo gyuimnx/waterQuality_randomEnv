@@ -98,11 +98,11 @@ def moving_average(data, window=50):
 if __name__ == "__main__":
     env = WaterParkEnv()
 
-    #Q-러닝 학습, epsilon 0.1로 시작, decay로 점차 감소
-    q_agent = QAgent(epsilon=0.3, epsilon_decay=0.999, epsilon_min=0.001)
+    #Q-러닝 학습, epsilon 1.0로 시작, decay로 점차 감소
+    q_agent = QAgent(epsilon=1.0, epsilon_decay=0.995, epsilon_min=0.01)
     fixed_policy = FixedIntervalPolicy()
     random_policy = RandomPolicy()
-    # greedy_agent = QAgent(gamma=0.0, epsilon=0.3, epsilon_decay=0.999, epsilon_min=0.001)
+    greedy_agent = QAgent(gamma=0.0, epsilon=1.0, epsilon_decay=0.995, epsilon_min=0.01)
 
     #Fixed Policy
     fixed_rewards, fixed_usage, fixed_safety = run_policy_full(env, fixed_policy, quantize=False, episodes=3000) 
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     random_rewards, random_usage, random_safety = run_policy_full(env, random_policy, quantize=False, episodes=3000)
     
     #Greedy Policy
-    # greedy_rewards, greedy_usage, greedy_safety, _, _ = train_qlearning_full(env, greedy_agent, episodes=3000)
+    greedy_rewards, greedy_usage, greedy_safety, _, _ = train_qlearning_full(env, greedy_agent, episodes=3000)
 
     #Q-Learning
     q_rewards, q_usage, q_safety, reward_parts_log, state_log = train_qlearning_full(env, q_agent, episodes=3000)
@@ -122,7 +122,7 @@ if __name__ == "__main__":
     plt.subplot(1, 2, 1)
     plt.plot(moving_average(fixed_rewards), label="Fixed Policy")
     plt.plot(moving_average(random_rewards), label="Random Policy")
-    # plt.plot(moving_average(greedy_rewards), label="Greedy Policy(Gamma=0)")
+    plt.plot(moving_average(greedy_rewards), label="Greedy Policy(Gamma=0)")
     plt.plot(moving_average(q_rewards), label="Q-Learning")
     
     plt.title("Policy Performance Comparison")
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     plt.subplot(1, 2, 2)
     plt.plot(moving_average(fixed_usage), label="Fixed Policy")
     plt.plot(moving_average(random_usage), label="Random Policy")
-    # plt.plot(moving_average(greedy_usage), label="Greedy Policy(Gamma=0)")
+    plt.plot(moving_average(greedy_usage), label="Greedy Policy(Gamma=0)")
     plt.plot(moving_average(q_usage), label="Q-Learning")
     
     plt.ylim(bottom=0)

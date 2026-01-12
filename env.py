@@ -5,7 +5,7 @@ import random
 #시간대별 오염 계수
 def get_pollution_factor(hour):
     if 14 <= hour < 17:
-        return 1.0
+        return 1.1
     elif 9 <= hour < 12:
         return 0.7
     elif 12 <= hour < 14 or 17 <= hour < 19:
@@ -76,11 +76,11 @@ class WaterParkEnv:
             
             #탁도 감소(염소가 탁도를 어느정도 낮춘다고 가정, 10kg당 0.1 감소)
             turbidity -= (ci_to_add / self.load_scale) * 0.1
-            #ph는 7.2를 기준으로 조정(ph 조절 약품으로 조절한다고 가정)
-            if ph < 6.2:
-                ph += (ci_to_add / self.load_scale) * 0.15 #5.8보다 낮으면 올림
-            elif ph > 8.2:
-                ph -= (ci_to_add / self.load_scale) * 0.15 #8.6보다 높으면 내림
+            #ph 조절 약품으로 조절한다고 가정
+            if ph < 5.9:
+                ph += (ci_to_add / self.load_scale) * 0.1 #5.8보다 낮으면 올림
+            elif ph > 8.5:
+                ph -= (ci_to_add / self.load_scale) * 0.1 #8.6보다 높으면 내림
             #ph가 정상범위인 경우 변화 없음
         else:
             reward_resource -= 0.2 #자원 부족 패널티
