@@ -24,6 +24,8 @@ class WaterParkEnv:
         base_actions = [0, 5, 15, 25, 35] #kg
         self.action_ci = [int(x * self.load_scale) for x in base_actions]
         
+        self.stable_steps = 0
+        
         self.reset()
 
     def get_current_guests(self, step):
@@ -150,6 +152,15 @@ class WaterParkEnv:
             excess = self.usedCI_count - self.max_ci
             reward -= excess * 0.05
             
+        # 이상적 범위 연속 유지 시 보너스
+        if 0.7 <= residualCI <= 1.2 and turbidity <= 1.5 and 6.5 <= ph <= 8.0:
+            self.stable_steps += 1
+            # 연속 안정 보너스 (최대 +0.5)
+            stability_bonus = min(0.5, self.stable_steps * 0.05)
+            reward += stability_bonus
+        else:
+            self.stable_steps = 0  # 범위 이탈 시 초기화
+        
         #총합 리워드
         reward = reward_resource + reward_ci + reward_turb + reward_ph
         

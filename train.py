@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from env import WaterParkEnv
-from agent import QAgent, FixedIntervalPolicy, RandomPolicy, quantize_state
+from agent import QAgent, FixedIntervalPolicy, RandomPolicy, quantize_state, GreedyPolicy
 
 def run_policy_full(env, policy, quantize=False, episodes=5000):
     total_rewards, usage_counts, safeties = [], [], []
@@ -17,10 +17,10 @@ def run_policy_full(env, policy, quantize=False, episodes=5000):
             action = policy.choose_action(s)
             state, reward, done, info = env.step(action)
             rewards += reward
-            if state[0] > 0.5 or state[1] > 2.8 or state[2] < 5.8 or state[2] > 8.6:
+            if state[0] > 0.4 or state[1] > 2.8 or state[2] < 5.8 or state[2] > 8.6:
                 safe = False
         #에피소드 종료 후 남은 자원 기반 보너스
-        bonus = 0.2 * state[3]   #state[3] = remaining_ci
+        bonus = 0.05 * state[3]   #state[3] = remaining_ci
         rewards += bonus
         total_rewards.append(rewards)
         usage_counts.append(env.usedCI_count)
@@ -60,7 +60,7 @@ def train_qlearning_full(env, agent, episodes=5000):
             state_log["ph"].append(info["ph"])
             
         #에피소드 종료 후 남은 자원 기반 보너스
-        bonus = 0.1 * state[3] #조정 필요
+        bonus = 0.05 * state[3] #조정 필요
         total_reward += bonus
         
         rewards.append(total_reward)
@@ -99,10 +99,10 @@ if __name__ == "__main__":
     env = WaterParkEnv()
 
     #Q-러닝 학습, epsilon 1.0로 시작, decay로 점차 감소
-    q_agent = QAgent(epsilon=1.0, epsilon_decay=0.995, epsilon_min=0.01)
+    q_agent = QAgent(epsilon=1.0, epsilon_decay=0.995, epsilon_min=0.01, gamma=0.95)
     fixed_policy = FixedIntervalPolicy()
     random_policy = RandomPolicy()
-    greedy_agent = QAgent(gamma=0.0, epsilon=1.0, epsilon_decay=0.995, epsilon_min=0.01)
+    greedy_policy = GreedyPolicy()
 
     #Fixed Policy
     fixed_rewards, fixed_usage, fixed_safety = run_policy_full(env, fixed_policy, quantize=False, episodes=3000) 
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     random_rewards, random_usage, random_safety = run_policy_full(env, random_policy, quantize=False, episodes=3000)
     
     #Greedy Policy
-    greedy_rewards, greedy_usage, greedy_safety, _, _ = train_qlearning_full(env, greedy_agent, episodes=3000)
+    greedy_rewards, greedy_usage, greedy_safety = run_policy_full(env, greedy_policy, quantize=False, episodes=3000)
 
     #Q-Learning
     q_rewards, q_usage, q_safety, reward_parts_log, state_log = train_qlearning_full(env, q_agent, episodes=3000)

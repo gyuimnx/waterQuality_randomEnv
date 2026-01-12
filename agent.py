@@ -143,3 +143,33 @@ class RandomPolicy:
         
         #주기일 때만 5가지 액션 중 랜덤 선택
         return random.randint(0, 4)
+    
+class GreedyPolicy:
+    def __init__(self):
+        self.actions = [0, 1, 2, 3, 4]  # 0kg, 5kg, 15kg, 25kg, 35kg
+    
+    def choose_action(self, state):
+        residualCI, turbidity, ph, remaining_ci, current_step = state
+        
+        # 자원이 없으면 0kg
+        if remaining_ci < 5:
+            return 0
+        
+        # 즉각적인 수질 문제가 심각하면 최대 투입
+        if residualCI < 0.5 or turbidity > 2.5 or ph < 6.0 or ph > 8.4:
+            return 4  # 35kg
+        
+        # 수질이 약간 나쁘면 중간 투입
+        elif residualCI < 0.8 or turbidity > 1.8:
+            return 3  # 25kg
+        
+        # 수질이 괜찮으면 유지만
+        elif residualCI < 1.5:
+            return 2  # 15kg
+        
+        elif residualCI > 1.8:
+            return 0
+        
+        # 수질이 매우 좋으면 최소 투입
+        else:
+            return 1  # 5kg
