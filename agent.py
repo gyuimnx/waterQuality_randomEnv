@@ -72,7 +72,7 @@ def quantize_state(state):
     return (residualCI_state, turbidity_state, ph_state, remaining_ci_state, time_state)
 
 class QAgent:
-    def __init__(self, state_shape=(3,2,3,10,3), n_actions=4, alpha=0.1, gamma=0.95, epsilon=0.1, epsilon_decay=0.0, epsilon_min=0.05): #n_action : 0kg, 5kg, 15kg, 25kg
+    def __init__(self, state_shape=(3,2,3,10,3), n_actions=5, alpha=0.1, gamma=0.95, epsilon=0.1, epsilon_decay=0.0, epsilon_min=0.05): #n_action : 0kg, 5kg, 15kg, 25kg, 50kg
         self.state_shape = state_shape
         self.n_actions = n_actions
         self.Q_table = np.zeros(state_shape + (n_actions,))
@@ -122,11 +122,11 @@ class FixedIntervalPolicy:
         #3스탭 간격이 아니면 0kg 투입
         if int(current_step) % self.interval != 0:
             return 0  
-        #0: 0kg, 1: 5kg, 2: 15kg, 3: 25kg
+        #0: 0kg, 1: 5kg, 2: 15kg, 3: 25kg, 4: 35kg
         if (residualCI < 1.2 or turbidity > 1.5): 
-            return 3  #25kg(수질이 나쁠 때)
+            return 4  #35kg(수질이 나쁠 때)
         elif (residualCI < 1.5):
-            return 2  #15kg(수질이 보통일 때)
+            return 3  #25kg(수질이 보통일 때)
         else:
             return 1  #5kg(수질이 좋을 때 유지)
 
@@ -141,5 +141,5 @@ class RandomPolicy:
         if int(current_step) % self.interval != 0:
             return 0
         
-        #주기일 때만 4가지 액션 중 랜덤 선택
-        return random.randint(0, 3)
+        #주기일 때만 5가지 액션 중 랜덤 선택
+        return random.randint(0, 4)

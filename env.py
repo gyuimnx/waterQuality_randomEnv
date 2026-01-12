@@ -14,21 +14,28 @@ def get_pollution_factor(hour):
         return 0.0
 
 class WaterParkEnv:
-    def __init__(self, max_steps=60, max_ci=200):
+    def __init__(self, max_steps=60, max_ci=200, daily_guests=15000):
         self.max_steps = max_steps
-        self.max_ci = max_ci #하루 최대 염소 사용량(kg)
-        #0kg, 5kg, 15kg, 25kg
-        self.action_ci = [0, 5, 15, 25]
+        self.daily_guests = daily_guests
+
+        self.load_scale = self.daily_guests / 15000.0
+        self.max_ci = int(max_ci * self.load_scale) #하루 최대 염소 사용량(kg)
+        
+        base_actions = [0, 5, 15, 25, 35] #kg
+        self.action_ci = [int(x * self.load_scale) for x in base_actions]
+        
         self.reset()
 
     def get_current_guests(self, step):
         hour = 9 + (step * 10) // 60
+        base_guests = self.daily_guests
+        
         if 9 <= hour < 12: #아침(18스탭동안 1스탭당 30% 유입)
-            return int(10000 * 0.3 / 18)
+            return int(base_guests * 0.3 / 18)
         elif 12 <= hour < 17: #오후(30스탭동안 1스탭당 50% 유입)
-            return int(10000 * 0.5 / 30)
+            return int(base_guests * 0.5 / 30)
         elif 17 <= hour < 19: #저녁(12스탭동안 1스탭당 20% 유입)
-            return int(10000 * 0.2 / 12)
+            return int(base_guests * 0.2 / 12)
         else:
             return 0 #영업시간 외 유입x
 
@@ -62,18 +69,18 @@ class WaterParkEnv:
             remaining_ci -= ci_to_add
             self.usedCI_count += ci_to_add
             #염소 투입 시 잔류염소 증가(10kg당 0.2mg 가정)
-            residualCI += (ci_to_add / 10.0) * 0.2
+            residualCI += (ci_to_add / (10.0 * self.load_scale)) * 0.2
             #자원 소모 패널티
             # reward -= 0.1 * ci_to_add
             reward_resource -= 0.1 * ci_to_add
             
             #탁도 감소(염소가 탁도를 어느정도 낮춘다고 가정, 10kg당 0.1 감소)
-            turbidity -= ci_to_add * 0.1
+            turbidity -= (ci_to_add / self.load_scale) * 0.1
             #ph는 7.2를 기준으로 조정(ph 조절 약품으로 조절한다고 가정)
             if ph < 6.2:
-                ph += ci_to_add * 0.15 #5.8보다 낮으면 올림
+                ph += (ci_to_add / self.load_scale) * 0.15 #5.8보다 낮으면 올림
             elif ph > 8.2:
-                ph -= ci_to_add * 0.15 #8.6보다 높으면 내림
+                ph -= (ci_to_add / self.load_scale) * 0.15 #8.6보다 높으면 내림
             #ph가 정상범위인 경우 변화 없음
         else:
             reward_resource -= 0.2 #자원 부족 패널티
@@ -89,6 +96,7 @@ class WaterParkEnv:
         hour = 9 + (int(current_step) * 10) // 60
         pollution_factor = get_pollution_factor(hour)
 
+        #사람도 늘고 물도 늘면 농도는 그대로여야 해서 self.load_scale을 안곱함
         ph += random.uniform(-0.1, 0.1) * pollution_factor
         turbidity += random.uniform(0.5, 1.0) * pollution_factor
         residualCI -= random.uniform(0.05, 0.1) * pollution_factor

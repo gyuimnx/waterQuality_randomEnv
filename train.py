@@ -94,6 +94,7 @@ def train_qlearning_full(env, agent, episodes=5000):
 
 def moving_average(data, window=50):
     return np.convolve(data, np.ones(window)/window, mode='valid')
+
 if __name__ == "__main__":
     env = WaterParkEnv()
 
@@ -101,7 +102,7 @@ if __name__ == "__main__":
     q_agent = QAgent(epsilon=0.3, epsilon_decay=0.999, epsilon_min=0.001)
     fixed_policy = FixedIntervalPolicy()
     random_policy = RandomPolicy()
-    greedy_agent = QAgent(gamma=0.0, epsilon=0.3, epsilon_decay=0.999, epsilon_min=0.001)
+    # greedy_agent = QAgent(gamma=0.0, epsilon=0.3, epsilon_decay=0.999, epsilon_min=0.001)
 
     #Fixed Policy
     fixed_rewards, fixed_usage, fixed_safety = run_policy_full(env, fixed_policy, quantize=False, episodes=3000) 
@@ -110,7 +111,7 @@ if __name__ == "__main__":
     random_rewards, random_usage, random_safety = run_policy_full(env, random_policy, quantize=False, episodes=3000)
     
     #Greedy Policy
-    greedy_rewards, greedy_usage, greedy_safety, _, _ = train_qlearning_full(env, greedy_agent, episodes=3000) #일단 추가
+    # greedy_rewards, greedy_usage, greedy_safety, _, _ = train_qlearning_full(env, greedy_agent, episodes=3000)
 
     #Q-Learning
     q_rewards, q_usage, q_safety, reward_parts_log, state_log = train_qlearning_full(env, q_agent, episodes=3000)
@@ -121,7 +122,7 @@ if __name__ == "__main__":
     plt.subplot(1, 2, 1)
     plt.plot(moving_average(fixed_rewards), label="Fixed Policy")
     plt.plot(moving_average(random_rewards), label="Random Policy")
-    plt.plot(moving_average(greedy_rewards), label="Greedy Policy(Gamma=0)") #일단 추가
+    # plt.plot(moving_average(greedy_rewards), label="Greedy Policy(Gamma=0)")
     plt.plot(moving_average(q_rewards), label="Q-Learning")
     
     plt.title("Policy Performance Comparison")
@@ -132,10 +133,10 @@ if __name__ == "__main__":
     plt.subplot(1, 2, 2)
     plt.plot(moving_average(fixed_usage), label="Fixed Policy")
     plt.plot(moving_average(random_usage), label="Random Policy")
-    plt.plot(moving_average(greedy_usage), label="Greedy Policy(Gamma=0)") #일단 추가
+    # plt.plot(moving_average(greedy_usage), label="Greedy Policy(Gamma=0)")
     plt.plot(moving_average(q_usage), label="Q-Learning")
     
-    plt.ylim(0, 210)
+    plt.ylim(bottom=0)
     plt.title("Resource Usage Comparison")
     plt.ylabel("Chlorine Usage (kg, Moving Average)")
     plt.legend()
@@ -180,3 +181,58 @@ if __name__ == "__main__":
 
     plt.tight_layout()
     plt.show()
+
+
+
+
+
+# #Epsilon Min 값에 따른 성능 비교 (0.01 vs 0.1 vs 0.3)
+
+# if __name__ == "__main__":
+#     #환경 생성(모든 에이전트가 동일한 환경 설정 공유)
+#     env = WaterParkEnv()
+    
+#     #Min Epsilon = 0.01
+#     agent_001 = QAgent(gamma=0.9, epsilon=1.0, epsilon_decay=0.995, epsilon_min=0.01)
+#     rewards_001, usage_001, _, _, _ = train_qlearning_full(env, agent_001, episodes=3000)
+
+#     #Min Epsilon = 0.1
+#     agent_01 = QAgent(gamma=0.9, epsilon=1.0, epsilon_decay=0.995, epsilon_min=0.1)
+#     rewards_01, usage_01, _, _, _ = train_qlearning_full(env, agent_01, episodes=3000)
+
+#     #Min Epsilon = 0.3
+#     agent_03 = QAgent(gamma=0.9, epsilon=1.0, epsilon_decay=0.995, epsilon_min=0.3)
+#     rewards_03, usage_03, _, _, _ = train_qlearning_full(env, agent_03, episodes=3000)
+
+
+#     # 결과 시각화
+#     plt.figure(figsize=(15, 6))
+
+#     #전체 리워드 비교
+#     plt.subplot(1, 2, 1)
+#     plt.plot(moving_average(rewards_001), label="Min Epsilon = 0.01", color='red')
+#     plt.plot(moving_average(rewards_01), label="Min Epsilon = 0.1", color='orange')
+#     plt.plot(moving_average(rewards_03), label="Min Epsilon = 0.3", color='green', alpha=0.6)
+    
+#     plt.title("Reward Comparison by Epsilon Min")
+#     plt.xlabel("Episodes")
+#     plt.ylabel("Total Reward")
+#     plt.legend()
+#     plt.grid(True, alpha=0.3)
+
+#     #자원 소모량 비교
+#     plt.subplot(1, 2, 2)
+#     plt.plot(moving_average(usage_001), label="Min Epsilon = 0.01", color='red')
+#     plt.plot(moving_average(usage_01), label="Min Epsilon = 0.1", color='orange')
+#     plt.plot(moving_average(usage_03), label="Min Epsilon = 0.3", color='green', alpha=0.6)
+    
+#     plt.title("Resource Usage Comparison")
+#     plt.xlabel("Episodes")
+#     plt.ylabel("Chlorine Usage (kg)")
+#     plt.ylim(0, 210)
+#     plt.legend()
+#     plt.grid(True, alpha=0.3)
+
+#     plt.tight_layout()
+#     plt.show()
+#     plt.close()
