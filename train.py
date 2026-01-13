@@ -75,11 +75,6 @@ def train_qlearning_full(env, agent, episodes=5000):
 
         agent.decay_epsilon()
         
-        # if (ep+1) % 100 == 0:
-        #     print(f"Episode {ep+1} / Epsilon: {agent.epsilon:.4f}")
-        #     print(f"  - Total Reward: {total_reward:.2f}")
-        #     print(f"  - Total CI Usage: {env.usedCI_count} kg")
-        #     print("-" * 30)
         print(f"Episode {ep+1}")
         print(f"  자원소모 패널티: {ep_reward_parts['resource']:.2f}") #자원
         print(f"  남은 자원 보너스: {bonus:.2f}") #자원
@@ -116,73 +111,72 @@ if __name__ == "__main__":
     #Q-Learning
     q_rewards, q_usage, q_safety, reward_parts_log, state_log = train_qlearning_full(env, q_agent, episodes=3000)
 
-    plt.figure(figsize=(14, 5))
-
-    #전체 리워드(왼쪽)
-    plt.subplot(1, 2, 1)
-    plt.plot(moving_average(fixed_rewards), label="Fixed Policy")
-    plt.plot(moving_average(random_rewards), label="Random Policy")
-    plt.plot(moving_average(greedy_rewards), label="Greedy Policy(Gamma=0)")
+    #전체 리워드 비교
+    plt.figure(figsize=(10, 6))
+    plt.plot(moving_average(fixed_rewards), label="Fixed")
+    plt.plot(moving_average(random_rewards), label="Random")
+    plt.plot(moving_average(greedy_rewards), label="Greedy(Gamma=0)")
     plt.plot(moving_average(q_rewards), label="Q-Learning")
     
     plt.title("Policy Performance Comparison")
-    plt.ylabel("Mean Total Reward (Moving Average)")
+    plt.ylabel("Mean Total Reward(Moving Average)")
+    plt.xlabel("Episodes")
     plt.legend()
+    plt.grid(True, linestyle='--', alpha=0.5)
+    
+    plt.show()
 
-    #자원 소모량(오른쪽)
-    plt.subplot(1, 2, 2)
-    plt.plot(moving_average(fixed_usage), label="Fixed Policy")
-    plt.plot(moving_average(random_usage), label="Random Policy")
-    plt.plot(moving_average(greedy_usage), label="Greedy Policy(Gamma=0)")
+    #자원 소모량 비교
+    plt.figure(figsize=(10, 6))
+    plt.plot(moving_average(fixed_usage), label="Fixed")
+    plt.plot(moving_average(random_usage), label="Random")
+    plt.plot(moving_average(greedy_usage), label="Greedy(Gamma=0)")
     plt.plot(moving_average(q_usage), label="Q-Learning")
     
     plt.ylim(bottom=0)
     plt.title("Resource Usage Comparison")
-    plt.ylabel("Chlorine Usage (kg, Moving Average)")
+    plt.ylabel("Chlorine Usage(kg, Moving Average)")
+    plt.xlabel("Episodes")
     plt.legend()
-
-    plt.tight_layout()
+    plt.grid(True, linestyle='--', alpha=0.5)
+    
     plt.show()
     
-    #Water Quality
+    #수질 상태 변화
     plt.figure(figsize=(15, 10))
 
-    #잔류염소 그래프(왼쪽 위)
+    #잔류염소
     plt.subplot(2, 2, 1)
-    plt.plot(moving_average(state_log['ci'], window=100), label="Residual Chlorine (mg/L)", color='b')
+    plt.plot(moving_average(state_log['ci'], window=100), label="Residual Chlorine(mg/L)", color='b')
     plt.axhline(y=0.4, color='b', linestyle='--', label='CI Min')
     plt.axhline(y=2.0, color='b', linestyle='--', label='CI Max')
     plt.title("Residual Chlorine Changes During Q-Learning")
-    plt.xlabel("Training Step (Moving Average)")
-    plt.ylabel("Value (mg/L)")
+    plt.ylabel("Value(mg/L)")
     plt.legend(loc='upper right')
     plt.grid(True, linestyle='--', alpha=0.6)
 
-    #탁도 그래프(오른쪽 위)
+    #탁도
     plt.subplot(2, 2, 2)
-    plt.plot(moving_average(state_log['turbidity'], window=100), label="Turbidity (NTU)", color='orange')
+    plt.plot(moving_average(state_log['turbidity'], window=100), label="Turbidity(NTU)", color='orange')
     plt.axhline(y=2.8, color='orange', linestyle='--', label='Turbidity Max')
     plt.title("Turbidity Changes During Q-Learning")
-    plt.xlabel("Training Step (Moving Average)")
-    plt.ylabel("Value (NTU)")
+    plt.ylabel("Value(NTU)")
     plt.legend(loc='upper right')
     plt.grid(True, linestyle='--', alpha=0.6)
 
-    #pH 그래프(왼쪽 아래)
+    #pH
     plt.subplot(2, 2, 3)
     plt.plot(moving_average(state_log['ph'], window=100), label="pH", color='g')
     plt.axhline(y=5.8, color='g', linestyle='--', label='pH Min')
     plt.axhline(y=8.6, color='g', linestyle='--', label='pH Max')
     plt.title("pH Changes During Q-Learning")
     plt.xlabel("Training Step (Moving Average)")
-    plt.ylabel("Value (pH)")
+    plt.ylabel("Value(pH)")
     plt.legend(loc='upper right')
     plt.grid(True, linestyle='--', alpha=0.6)
 
     plt.tight_layout()
     plt.show()
-
-
 
 
 

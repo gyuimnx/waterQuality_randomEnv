@@ -17,7 +17,6 @@ def quantize_state(state):
     turbidity_state = 0 if turbidity <= 2.8 else 1
     
     #잔류염소 상태 양자화
-    #잔류염소
     if residualCI < 0.4: #잔류염소 낮음
         residualCI_state = 0
     elif residualCI > 2.0: #잔류염소 높음
@@ -27,37 +26,6 @@ def quantize_state(state):
         residualCI_state = 1
     
     #남은 염소 상태 양자화
-    # if remaining_ci < 20: #20kg 미만일 때 부족으로 인식
-    #     remaining_ci_state = 0
-    # elif remaining_ci < 50: #20kg ~ 50kg
-    #     remaining_ci_state = 1
-    # elif remaining_ci < 100: #50kg ~ 100kg
-    #     remaining_ci_state = 2
-    # else: #100kg 이상
-    #     remaining_ci_state = 3
-    
-    # 남은 염소 상태 양자화(더 촘촘하게 20kg 단위로 구분)
-    # if remaining_ci < 20:
-    #     remaining_ci_state = 0
-    # elif remaining_ci < 40:
-    #     remaining_ci_state = 1
-    # elif remaining_ci < 60:
-    #     remaining_ci_state = 2
-    # elif remaining_ci < 80:
-    #     remaining_ci_state = 3
-    # elif remaining_ci < 100:
-    #     remaining_ci_state = 4
-    # elif remaining_ci < 120:
-    #     remaining_ci_state = 5
-    # elif remaining_ci < 140:
-    #     remaining_ci_state = 6
-    # elif remaining_ci < 160:
-    #     remaining_ci_state = 7
-    # elif remaining_ci < 180:
-    #     remaining_ci_state = 8
-    # else:
-    #     remaining_ci_state = 9
-        
     remaining_ci_state = min(9, int(remaining_ci // 20))
         
     #시간 양자화(아침, 오후, 저녁)
@@ -99,19 +67,6 @@ class QAgent:
             if self.epsilon < self.epsilon_min:
                 self.epsilon = self.epsilon_min
 
-# class FixedIntervalPolicy:
-#     def __init__(self):
-#         self.max_steps = 60  #하루 스텝 수
-#         self.n_pulses = 10   #하루에 10번 투입
-#         self.step_interval = self.max_steps // self.n_pulses  #투입 간격
-
-#     def choose_action(self, state):
-#         _, _, _, remaining_ci, current_step = state
-#         if remaining_ci > 0 and int(current_step) % self.step_interval == 0:
-#             return 2  #20kg 행동
-#         return 0      #0kg 행동
-
-# agent.py
 class FixedIntervalPolicy:
     def __init__(self):
         #3스탭(30분)마다 수질을 측정하여 염소 투입량을 결정
@@ -124,9 +79,9 @@ class FixedIntervalPolicy:
             return 0  
         #0: 0kg, 1: 5kg, 2: 15kg, 3: 25kg, 4: 35kg
         if (residualCI < 1.2 or turbidity > 1.5): 
-            return 4  #35kg(수질이 나쁠 때)
+            return 3  #25kg(수질이 나쁠 때)
         elif (residualCI < 1.5):
-            return 3  #25kg(수질이 보통일 때)
+            return 2  #15kg(수질이 보통일 때)
         else:
             return 1  #5kg(수질이 좋을 때 유지)
 
