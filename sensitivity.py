@@ -21,13 +21,13 @@ def run_policy_comparison():
         
         # Fixed Policy
         fixed_policy = FixedIntervalPolicy()
-        _, f_usages, _ = run_policy_full(env, fixed_policy, episodes=1000)
+        _, f_usages, _, _ = run_policy_full(env, fixed_policy, episodes=1000)
         avg_f = np.mean(f_usages) # 고정 정책은 학습이 없으므로 전체 평균
         usage_fixed.append(avg_f)
         
         # Random Policy
         random_policy = RandomPolicy()
-        _, r_usages, _ = run_policy_full(env, random_policy, episodes=1000)
+        _, r_usages, _, _ = run_policy_full(env, random_policy, episodes=1000)
         avg_r = np.mean(r_usages)
         usage_random.append(avg_r)
 

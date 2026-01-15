@@ -74,7 +74,7 @@ class WaterParkEnv:
             residualCI += (ci_to_add / (10.0 * self.load_scale)) * 0.2
             #자원 소모 패널티
             # reward -= 0.1 * ci_to_add
-            reward_resource -= 0.1 * ci_to_add
+            reward_resource -= 0.25 * ci_to_add
             
             #탁도 감소(염소가 탁도를 어느정도 낮춘다고 가정, 10kg당 0.1 감소)
             turbidity -= (ci_to_add / self.load_scale) * 0.1
@@ -87,7 +87,6 @@ class WaterParkEnv:
         else:
             reward_resource -= 0.2 #자원 부족 패널티
         
-        #추가한거-----------------------------
         #정상 수질 보상
         if 0.4 <= residualCI <= 2.0 and turbidity <= 2.8 and 5.8 <= ph <= 8.6:
             reward_quality += 0.3
@@ -102,9 +101,21 @@ class WaterParkEnv:
         ph += random.uniform(-0.1, 0.1) * pollution_factor
         turbidity += random.uniform(0.5, 1.0) * pollution_factor
         residualCI -= random.uniform(0.05, 0.1) * pollution_factor
+        
+        #가끔 예상치 못한 큰 오염 발생(10% 확률)
+        if random.random() < 0.1:
+            turbidity += 0.4
 
         #자연 복원(환경 회복)
-        turbidity -= random.uniform(0.1, 0.3)  #입자 가라앉음
+        # turbidity -= random.uniform(0.1, 0.3)  #입자 가라앉음
+        # residualCI -= random.uniform(0.01, 0.02)  #자연 소멸
+        # # residualCI -= 0.005
+        # 1. 캡핑(Capping): 염소가 1.2kg 넘게 있어도 효과는 1.2kg만큼만 (과잉 투입 방지)
+        effective_ci = min(residualCI, 1.2) 
+        
+        # 2. 탁도 감소: 자연 침전(0.1~0.2) + 염소의 지속 효과(effective_ci * 0.1)
+        turbidity -= (random.uniform(0.1, 0.2) + effective_ci * 0.1)
+        #pH는 자연 복원이 거의 없다고 가정, 중성 쪽으로
         if ph > 8.2:  #염기성에서 산성
             ph -= random.uniform(0.01, 0.05)
         elif ph < 6.2:  #산성에서 염기성
@@ -162,7 +173,7 @@ class WaterParkEnv:
             self.stable_steps = 0  # 범위 이탈 시 초기화
         
         #총합 리워드
-        reward = reward_resource + reward_ci + reward_turb + reward_ph
+        reward = 10.0 + reward_resource + reward_ci + reward_turb + reward_ph
         
         #-------------상태 업데이트-------------
         current_step += 1
