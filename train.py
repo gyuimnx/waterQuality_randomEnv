@@ -156,13 +156,13 @@ if __name__ == "__main__":
 
         # 전체 리워드 비교
         plt.figure(figsize=(10, 6))
-        plt.plot(moving_average(fixed_rewards), label="Fixed")
-        plt.plot(moving_average(random_rewards), label="Random")
-        plt.plot(moving_average(greedy_rewards), label="Greedy(Gamma=0)")
+        plt.plot(moving_average(fixed_rewards), label="Fixed Policy")
+        plt.plot(moving_average(random_rewards), label="Random Policy")
+        plt.plot(moving_average(greedy_rewards), label="Greedy Policy")
         plt.plot(moving_average(q_rewards), label="Q-Learning")
 
-        plt.title("Policy Performance Comparison")
-        plt.ylabel("Mean Total Reward(Moving Average)")
+        plt.title("Learning Performance: Total Reward")
+        plt.ylabel("Total Reward (Moving Average)")
         plt.xlabel("Episodes")
         plt.legend()
         plt.grid(True, linestyle='--', alpha=0.5)
@@ -172,195 +172,132 @@ if __name__ == "__main__":
         plt.savefig(os.path.join(save_dir, filename))
         plt.close()
 
-        # 자원 소모량 비교(y축 0부터)
-        plt.figure(figsize=(10, 6))
-        plt.plot(moving_average(fixed_usage), label="Fixed")
-        plt.plot(moving_average(random_usage), label="Random")
-        plt.plot(moving_average(greedy_usage), label="Greedy(Gamma=0)")
-        plt.plot(moving_average(q_usage), label="Q-Learning")
+        # # 자원 소모량 비교(y축 0부터)
+        # plt.figure(figsize=(10, 6))
+        # plt.plot(moving_average(fixed_usage), label="Fixed Policy")
+        # plt.plot(moving_average(random_usage), label="Random Policy")
+        # plt.plot(moving_average(greedy_usage), label="Greedy Policy")
+        # plt.plot(moving_average(q_usage), label="Q-Learning")
 
-        plt.ylim(bottom=0)
-        plt.title("Resource Usage Comparison")
-        plt.ylabel("Chlorine Usage(kg, Moving Average)")
-        plt.xlabel("Episodes")
-        plt.legend()
-        plt.grid(True, linestyle='--', alpha=0.5)
+        # plt.ylim(bottom=0)
+        # plt.title("Resource Usage Comparison")
+        # plt.ylabel("Average. Chlorine Consumption (kg)")
+        # plt.xlabel("Episodes")
+        # plt.legend()
+        # plt.grid(True, linestyle='--', alpha=0.5)
 
-        # plt.show()
-        plt.savefig(os.path.join(save_dir, f"{i}-2_Resource.png"))
-        plt.close()
+        # # plt.show()
+        # plt.savefig(os.path.join(save_dir, f"{i}-2_Resource.png"))
+        # plt.close()
         
         # 자원 소모량 비교(자동 스케일링)
         plt.figure(figsize=(10, 6))
-        plt.plot(moving_average(fixed_usage), label="Fixed")
-        plt.plot(moving_average(random_usage), label="Random")
-        plt.plot(moving_average(greedy_usage), label="Greedy")
+        plt.plot(moving_average(fixed_usage), label="Fixed Policy")
+        plt.plot(moving_average(random_usage), label="Random Policy")
+        plt.plot(moving_average(greedy_usage), label="Greedy Policy")
         plt.plot(moving_average(q_usage), label="Q-Learning")
                 
-        plt.title(f"[{i}th Sim] Resource Usage Comparison (Auto Scaled)")
-        plt.ylabel("Chlorine Usage (kg, Moving Average)")
+        plt.title("Resource Usage Comparison")
+        plt.ylabel("Average. Chlorine Consumption (kg)")
         plt.xlabel("Episodes")
         plt.legend()
         plt.grid(True, linestyle='--', alpha=0.5)
         
-        # 파일명 끝에 _AutoScaled를 붙여서 따로 저장
-        plt.savefig(os.path.join(save_dir, f"{i}-2-2_Resource_AutoScaled.png"))
+        plt.savefig(os.path.join(save_dir, f"{i}-2_Resource_AutoScaled.png"))
         plt.close()
 
-        # 수질 상태 변화
-        plt.figure(figsize=(15, 10))
+        # 수질 안정성 및 안전 기준 준수 비교 그래프
+        fig, axes = plt.subplots(2, 3, figsize=(18, 10))
+        fig.suptitle("Comparison of Water Quality Stability and Safety Compliance: Q-Learning vs. Fixed Policy", fontsize=16)
 
-        # 잔류염소
-        plt.subplot(2, 2, 1)
-        plt.plot(moving_average(state_log['ci'], window=100), label="Residual Chlorine(mg/L)", color='b')
-        plt.axhline(y=0.4, color='b', linestyle='--', label='CI Min')
-        plt.axhline(y=2.0, color='b', linestyle='--', label='CI Max')
-        plt.title("Residual Chlorine Changes During Q-Learning")
-        plt.ylabel("Value(mg/L)")
-        plt.legend(loc='upper right')
-        plt.grid(True, linestyle='--', alpha=0.6)
-
-        # 탁도
-        plt.subplot(2, 2, 2)
-        plt.plot(moving_average(
-            state_log['turbidity'], window=100), label="Turbidity(NTU)", color='orange')
-        plt.axhline(y=2.8, color='orange', linestyle='--', label='Turbidity Max')
-        plt.title("Turbidity Changes During Q-Learning")
-        plt.ylabel("Value(NTU)")
-        plt.legend(loc='upper right')
-        plt.grid(True, linestyle='--', alpha=0.6)
-
-        # pH
-        plt.subplot(2, 2, 3)
-        plt.plot(moving_average(state_log['ph'], window=100), label="pH", color='g')
-        plt.axhline(y=5.8, color='g', linestyle='--', label='pH Min')
-        plt.axhline(y=8.6, color='g', linestyle='--', label='pH Max')
-        plt.title("pH Changes During Q-Learning")
-        plt.xlabel("Training Step (Moving Average)")
-        plt.ylabel("Value(pH)")
-        plt.legend(loc='upper right')
-        plt.grid(True, linestyle='--', alpha=0.6)
-
-        # plt.tight_layout()
-        # plt.show()
-        plt.tight_layout(rect=[0, 0.03, 1, 0.95])
-        plt.savefig(os.path.join(save_dir, f"{i}-3_Quality_Q.png"))
-        plt.close()
-
-        # -------------------------------------------------------
-        # [Graph 3-2] Fixed Policy 수질 상태 변화 (단독)
-        # -------------------------------------------------------
-        plt.figure(figsize=(15, 10))
-        plt.suptitle("Water Quality Changes - Fixed Policy (Interval Control)", fontsize=16)
-
-        # 잔류염소
-        plt.subplot(2, 2, 1)
-        # Fixed 로그 데이터 사용 (fixed_state_log)
-        plt.plot(moving_average(fixed_state_log['ci'], window=100), label="Residual CI", color='r')
-        plt.axhline(y=0.4, color='black', linestyle=':', label='Min/Max')
-        plt.axhline(y=2.0, color='black', linestyle=':')
-        plt.title("Residual Chlorine (mg/L)")
-        plt.ylabel("Value")
-        plt.legend(loc='upper right')
-        plt.grid(True, linestyle='--', alpha=0.6)
-
-        # 탁도
-        plt.subplot(2, 2, 2)
-        plt.plot(moving_average(fixed_state_log['turbidity'], window=100), label="Turbidity", color='darkorange')
-        plt.axhline(y=2.8, color='black', linestyle=':', label='Max')
-        plt.title("Turbidity (NTU)")
-        plt.ylabel("Value")
-        plt.legend(loc='upper right')
-        plt.grid(True, linestyle='--', alpha=0.6)
-
-        # pH
-        plt.subplot(2, 2, 3)
-        plt.plot(moving_average(fixed_state_log['ph'], window=100), label="pH", color='darkgreen')
-        plt.axhline(y=5.8, color='black', linestyle=':', label='Min/Max')
-        plt.axhline(y=8.6, color='black', linestyle=':')
-        plt.title("pH")
-        plt.ylabel("Value")
-        plt.xlabel("Training Steps (Moving Average)")
-        plt.legend(loc='upper right')
-        plt.grid(True, linestyle='--', alpha=0.6)
-
-        # plt.tight_layout(rect=[0, 0.03, 1, 0.95])
-        # plt.show()
-        plt.tight_layout(rect=[0, 0.03, 1, 0.95])
-        plt.savefig(os.path.join(save_dir, f"{i}-4_Quality_Fixed.png"))
-        plt.close()
-
-
-        # -------------------------------------------------------
-        # [Graph 4] 행동 분포 비교 (4개 정책 전체 비교 - 비율 %)
-        # -------------------------------------------------------
+        # 데이터 절반 자르기 (Convergence가 빠르므로 앞부분 집중)
+        # moving_average 결과의 길이를 반으로 줄임
+        q_ci = moving_average(state_log['ci'], window=100)
+        q_turb = moving_average(state_log['turbidity'], window=100)
+        q_ph = moving_average(state_log['ph'], window=100)
         
-
-
-        q_actions = get_action_distribution(env, q_agent)
-        greedy_actions = get_action_distribution(env, greedy_policy)
-        fixed_actions = get_action_distribution(env, fixed_policy)
-        random_actions = get_action_distribution(env, random_policy)
-
-        plt.figure(figsize=(12, 6))
-        plt.hist([q_actions, greedy_actions, fixed_actions, random_actions], bins=np.arange(6)-0.5, label=['Q-Learning', 'Greedy', 'Fixed', 'Random'], color=['green', 'red', 'blue', 'gray'], alpha=0.7, rwidth=0.85, density=True)
-        plt.xticks(range(5), ['0kg', '5kg', '15kg', '25kg', '35kg'])
-        plt.title(f"[{i}th Sim] Action Distribution Comparison (%)")
-        plt.ylabel("Probability")
-        plt.legend()
-        plt.grid(axis='y', linestyle='--', alpha=0.5)
+        f_ci = moving_average(fixed_state_log['ci'], window=100)
+        f_turb = moving_average(fixed_state_log['turbidity'], window=100)
+        f_ph = moving_average(fixed_state_log['ph'], window=100)
         
-        plt.savefig(os.path.join(save_dir, f"{i}-5_Action.png"))
+        cut_idx = len(q_ci) // 2  # 절반 인덱스
+        
+        # 공통 스타일 정의
+        x_label = "Training Steps"
+        
+        # ---------------------------
+        # Row 1: Q-Learning (Blue/Orange/Green)
+        # ---------------------------
+        
+        # 1-1. 잔류염소 (Q-Learning)
+        ax = axes[0, 0]
+        ax.plot(q_ci[:cut_idx], label="Q-Learning", color='blue')
+        ax.axhline(y=0.4, color='black', linestyle=':', label='Min (0.4)')
+        ax.axhline(y=2.0, color='black', linestyle=':', label='Max (2.0)')
+        ax.set_title("Residual Chlorine (Q-Learning)")
+        ax.set_ylabel("Concentration (mg/L)")
+        ax.set_xticklabels([]) # 위쪽 그래프 X축 라벨 숨김
+        ax.legend(loc='upper right')
+        ax.grid(True, linestyle='--', alpha=0.6)
+
+        # 1-2. 탁도 (Q-Learning)
+        ax = axes[0, 1]
+        ax.plot(q_turb[:cut_idx], label="Q-Learning", color='orange')
+        ax.axhline(y=2.8, color='black', linestyle=':', label='Max (2.8)')
+        ax.set_title("Turbidity (Q-Learning)")
+        ax.set_ylabel("Turbidity (NTU)")
+        ax.set_xticklabels([])
+        ax.legend(loc='upper right')
+        ax.grid(True, linestyle='--', alpha=0.6)
+
+        # 1-3. pH (Q-Learning)
+        ax = axes[0, 2]
+        ax.plot(q_ph[:cut_idx], label="Q-Learning", color='green')
+        ax.axhline(y=5.8, color='black', linestyle=':', label='Min (5.8)')
+        ax.axhline(y=8.6, color='black', linestyle=':', label='Max (8.6)')
+        ax.set_title("pH (Q-Learning)")
+        ax.set_ylabel("pH Value")
+        ax.set_xticklabels([])
+        ax.legend(loc='upper right')
+        ax.grid(True, linestyle='--', alpha=0.6)
+
+        # ---------------------------
+        # Row 2: Fixed Policy
+        # ---------------------------
+
+        # 2-1. 잔류염소 (Fixed)
+        ax = axes[1, 0]
+        ax.plot(f_ci[:cut_idx], label="Fixed Policy", color='blue')
+        ax.axhline(y=0.4, color='black', linestyle=':', label='Min (0.4)')
+        ax.axhline(y=2.0, color='black', linestyle=':', label='Max (2.0)')
+        ax.set_title("Residual Chlorine (Fixed Policy)")
+        ax.set_ylabel("Concentration (mg/L)")
+        ax.set_xlabel(x_label)
+        ax.legend(loc='upper right')
+        ax.grid(True, linestyle='--', alpha=0.6)
+
+        # 2-2. 탁도 (Fixed)
+        ax = axes[1, 1]
+        ax.plot(f_turb[:cut_idx], label="Fixed Policy", color='orange')
+        ax.axhline(y=2.8, color='black', linestyle=':', label='Max (2.8)')
+        ax.set_title("Turbidity (Fixed Policy)")
+        ax.set_ylabel("Turbidity (NTU)")
+        ax.set_xlabel(x_label)
+        ax.legend(loc='upper right')
+        ax.grid(True, linestyle='--', alpha=0.6)
+
+        # 2-3. pH (Fixed)
+        ax = axes[1, 2]
+        ax.plot(f_ph[:cut_idx], label="Fixed Policy", color='green')
+        ax.axhline(y=5.8, color='black', linestyle=':', label='Min (5.8)')
+        ax.axhline(y=8.6, color='black', linestyle=':', label='Max (8.6)')
+        ax.set_title("pH (Fixed Policy)")
+        ax.set_ylabel("pH Value")
+        ax.set_xlabel(x_label)
+        ax.legend(loc='upper right')
+        ax.grid(True, linestyle='--', alpha=0.6)
+
+        # 저장
+        plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+        plt.savefig(os.path.join(save_dir, f"{i}-3_Quality_Integrated.png"))
         plt.close()
-
-
-    # #Epsilon Min 값에 따른 성능 비교 (0.01 vs 0.1 vs 0.3)
-
-    # if __name__ == "__main__":
-    #     #환경 생성(모든 에이전트가 동일한 환경 설정 공유)
-    #     env = WaterParkEnv()
-
-    #     #Min Epsilon = 0.01
-    #     agent_001 = QAgent(gamma=0.9, epsilon=1.0, epsilon_decay=0.995, epsilon_min=0.01)
-    #     rewards_001, usage_001, _, _, _ = train_qlearning_full(env, agent_001, episodes=3000)
-
-    #     #Min Epsilon = 0.1
-    #     agent_01 = QAgent(gamma=0.9, epsilon=1.0, epsilon_decay=0.995, epsilon_min=0.1)
-    #     rewards_01, usage_01, _, _, _ = train_qlearning_full(env, agent_01, episodes=3000)
-
-    #     #Min Epsilon = 0.3
-    #     agent_03 = QAgent(gamma=0.9, epsilon=1.0, epsilon_decay=0.995, epsilon_min=0.3)
-    #     rewards_03, usage_03, _, _, _ = train_qlearning_full(env, agent_03, episodes=3000)
-
-
-    #     # 결과 시각화
-    #     plt.figure(figsize=(15, 6))
-
-    #     #전체 리워드 비교
-    #     plt.subplot(1, 2, 1)
-    #     plt.plot(moving_average(rewards_001), label="Min Epsilon = 0.01", color='red')
-    #     plt.plot(moving_average(rewards_01), label="Min Epsilon = 0.1", color='orange')
-    #     plt.plot(moving_average(rewards_03), label="Min Epsilon = 0.3", color='green', alpha=0.6)
-
-    #     plt.title("Reward Comparison by Epsilon Min")
-    #     plt.xlabel("Episodes")
-    #     plt.ylabel("Total Reward")
-    #     plt.legend()
-    #     plt.grid(True, alpha=0.3)
-
-    #     #자원 소모량 비교
-    #     plt.subplot(1, 2, 2)
-    #     plt.plot(moving_average(usage_001), label="Min Epsilon = 0.01", color='red')
-    #     plt.plot(moving_average(usage_01), label="Min Epsilon = 0.1", color='orange')
-    #     plt.plot(moving_average(usage_03), label="Min Epsilon = 0.3", color='green', alpha=0.6)
-
-    #     plt.title("Resource Usage Comparison")
-    #     plt.xlabel("Episodes")
-    #     plt.ylabel("Chlorine Usage (kg)")
-    #     plt.ylim(0, 210)
-    #     plt.legend()
-    #     plt.grid(True, alpha=0.3)
-
-    #     plt.tight_layout()
-    #     plt.show()
-    #     plt.close()
