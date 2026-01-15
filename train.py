@@ -28,7 +28,7 @@ def run_policy_full(env, policy, quantize=False, episodes=5000):
             if state[0] > 0.4 or state[1] > 2.8 or state[2] < 5.8 or state[2] > 8.6:
                 safe = False
         # 에피소드 종료 후 남은 자원 기반 보너스
-        bonus = 0.05 * state[3]  # state[3] = remaining_ci
+        bonus = 0.05 * state[3]
         rewards += bonus
         total_rewards.append(rewards)
         usage_counts.append(env.usedCI_count)
@@ -49,7 +49,7 @@ def train_qlearning_full(env, agent, episodes=5000):
         total_reward = 0
         safe = True
 
-        # 에피소드별 리워드 파트 합계
+        #에피소드별 리워드 파트 합계
         ep_reward_parts = {"resource": 0, "quality": 0, "ci": 0, "turbidity": 0, "ph": 0}
 
         while not done:
@@ -61,7 +61,7 @@ def train_qlearning_full(env, agent, episodes=5000):
             state = next_state
             total_reward += reward
 
-            # 리워드 기여도 기록
+            #리워드 기여도 기록
             for k, v in info["reward_parts"].items():
                 reward_parts_log[k].append(v)
                 ep_reward_parts[k] += v  # 수정
@@ -69,29 +69,29 @@ def train_qlearning_full(env, agent, episodes=5000):
             state_log["turbidity"].append(info["turbidity"])
             state_log["ph"].append(info["ph"])
 
-        # 에피소드 종료 후 남은 자원 기반 보너스
-        bonus = 0.05 * state[3]  # 조정 필요
+        #에피소드 종료 후 남은 자원 기반 보너스
+        bonus = 0.05 * state[3]
         total_reward += bonus
 
         rewards.append(total_reward)
         usages.append(env.usedCI_count)
         safeties.append(safe)
 
-        # 에피소드 진행도에 따라 epsilon_min 조정
+        #에피소드 진행도에 따라 epsilon_min 조정
         if ep > episodes * 0.8:
-            agent.epsilon_min = 0.01  # 80% 이상 진행 시 1%로 제한
+            agent.epsilon_min = 0.01  #80% 이상 진행 시 1%로 제한
         elif ep > episodes * 0.5:
-            agent.epsilon_min = 0.05  # 50% 이상 진행 시 5%로 제한
+            agent.epsilon_min = 0.05  #50% 이상 진행 시 5%로 제한
 
         agent.decay_epsilon()
 
         print(f"Episode {ep+1}")
-        print(f"  자원소모 패널티: {ep_reward_parts['resource']:.2f}")  # 자원
-        print(f"  남은 자원 보너스: {bonus:.2f}")  # 자원
-        print(f"  수질 기준 충족 리워드: {ep_reward_parts['quality']:.2f}")  # 수질
-        print(f"  잔류염소 리워드: {ep_reward_parts['ci']:.2f}")  # 수질
-        print(f"  탁도 리워드: {ep_reward_parts['turbidity']:.2f}")  # 수질
-        print(f"  pH 리워드: {ep_reward_parts['ph']:.2f}")  # 수질
+        print(f"  자원소모 패널티: {ep_reward_parts['resource']:.2f}")  #자원
+        print(f"  남은 자원 보너스: {bonus:.2f}")  #자원
+        print(f"  수질 기준 충족 리워드: {ep_reward_parts['quality']:.2f}")  #수질
+        print(f"  잔류염소 리워드: {ep_reward_parts['ci']:.2f}")  #수질
+        print(f"  탁도 리워드: {ep_reward_parts['turbidity']:.2f}")  #수질
+        print(f"  pH 리워드: {ep_reward_parts['ph']:.2f}")  #수질
         print(f"  총 리워드: {total_reward:.2f}")
         print("-" * 40)
 
@@ -107,7 +107,7 @@ def get_action_distribution(env, policy, episodes=500):
         state = env.reset()
         done = False
         while not done:
-            # Q-Agent는 양자화된 상태 필요, 나머지는 연속 상태 사용
+            #Q-Agent는 양자화된 상태 필요, 나머지는 연속 상태 사용
             if hasattr(policy, 'Q_table'): 
                 s = quantize_state(state)
                 action = policy.choose_action(s)
@@ -133,28 +133,28 @@ if __name__ == "__main__":
         
         env = WaterParkEnv()
         
-        # Q-러닝 학습, epsilon 1.0로 시작, decay로 점차 감소
+        #Q-러닝 학습, epsilon 1.0로 시작, decay로 점차 감소
         q_agent = QAgent(epsilon=1.0, epsilon_decay=0.995, epsilon_min=0.01, gamma=0.95)
         fixed_policy = FixedIntervalPolicy()
         random_policy = RandomPolicy()
         greedy_policy = GreedyPolicy()
 
-        # Fixed Policy
+        #Fixed Policy
         fixed_rewards, fixed_usage, fixed_safety, fixed_state_log = run_policy_full(env, fixed_policy, quantize=False, episodes=3000)
 
-        # Random Policy
+        #Random Policy
         random_rewards, random_usage, random_safety, _ = run_policy_full(
             env, random_policy, quantize=False, episodes=3000)
 
-        # Greedy Policy
+        #Greedy Policy
         greedy_rewards, greedy_usage, greedy_safety, _ = run_policy_full(
             env, greedy_policy, quantize=False, episodes=3000)
 
-        # Q-Learning
+        #Q-Learning
         q_rewards, q_usage, q_safety, reward_parts_log, state_log = train_qlearning_full(
             env, q_agent, episodes=3000)
 
-        # 전체 리워드 비교
+        #전체 리워드 비교
         plt.figure(figsize=(10, 6))
         plt.plot(moving_average(fixed_rewards), label="Fixed Policy")
         plt.plot(moving_average(random_rewards), label="Random Policy")
@@ -167,28 +167,9 @@ if __name__ == "__main__":
         plt.legend()
         plt.grid(True, linestyle='--', alpha=0.5)
 
-        # plt.show()
         filename = f"{i}-1_Reward.png"
         plt.savefig(os.path.join(save_dir, filename))
         plt.close()
-
-        # # 자원 소모량 비교(y축 0부터)
-        # plt.figure(figsize=(10, 6))
-        # plt.plot(moving_average(fixed_usage), label="Fixed Policy")
-        # plt.plot(moving_average(random_usage), label="Random Policy")
-        # plt.plot(moving_average(greedy_usage), label="Greedy Policy")
-        # plt.plot(moving_average(q_usage), label="Q-Learning")
-
-        # plt.ylim(bottom=0)
-        # plt.title("Resource Usage Comparison")
-        # plt.ylabel("Average. Chlorine Consumption (kg)")
-        # plt.xlabel("Episodes")
-        # plt.legend()
-        # plt.grid(True, linestyle='--', alpha=0.5)
-
-        # # plt.show()
-        # plt.savefig(os.path.join(save_dir, f"{i}-2_Resource.png"))
-        # plt.close()
         
         # 자원 소모량 비교(자동 스케일링)
         plt.figure(figsize=(10, 6))
@@ -210,8 +191,7 @@ if __name__ == "__main__":
         fig, axes = plt.subplots(2, 3, figsize=(18, 10))
         fig.suptitle("Comparison of Water Quality Stability and Safety Compliance: Q-Learning vs. Fixed Policy", fontsize=16)
 
-        # 데이터 절반 자르기 (Convergence가 빠르므로 앞부분 집중)
-        # moving_average 결과의 길이를 반으로 줄임
+        # 데이터 절반 자름(이미지 크기가 커서)
         q_ci = moving_average(state_log['ci'], window=100)
         q_turb = moving_average(state_log['turbidity'], window=100)
         q_ph = moving_average(state_log['ph'], window=100)
@@ -225,11 +205,9 @@ if __name__ == "__main__":
         # 공통 스타일 정의
         x_label = "Training Steps"
         
-        # ---------------------------
-        # Row 1: Q-Learning (Blue/Orange/Green)
-        # ---------------------------
+        #Q-Learning
         
-        # 1-1. 잔류염소 (Q-Learning)
+        #잔류염소(Q-Learning)
         ax = axes[0, 0]
         ax.plot(q_ci[:cut_idx], label="Q-Learning", color='blue')
         ax.axhline(y=0.4, color='black', linestyle=':', label='Min (0.4)')
@@ -240,7 +218,7 @@ if __name__ == "__main__":
         ax.legend(loc='upper right')
         ax.grid(True, linestyle='--', alpha=0.6)
 
-        # 1-2. 탁도 (Q-Learning)
+        #탁도(Q-Learning)
         ax = axes[0, 1]
         ax.plot(q_turb[:cut_idx], label="Q-Learning", color='orange')
         ax.axhline(y=2.8, color='black', linestyle=':', label='Max (2.8)')
@@ -250,7 +228,7 @@ if __name__ == "__main__":
         ax.legend(loc='upper right')
         ax.grid(True, linestyle='--', alpha=0.6)
 
-        # 1-3. pH (Q-Learning)
+        #pH(Q-Learning)
         ax = axes[0, 2]
         ax.plot(q_ph[:cut_idx], label="Q-Learning", color='green')
         ax.axhline(y=5.8, color='black', linestyle=':', label='Min (5.8)')
@@ -261,11 +239,8 @@ if __name__ == "__main__":
         ax.legend(loc='upper right')
         ax.grid(True, linestyle='--', alpha=0.6)
 
-        # ---------------------------
-        # Row 2: Fixed Policy
-        # ---------------------------
-
-        # 2-1. 잔류염소 (Fixed)
+        #Fixed Policy
+        #잔류염소(Fixed)
         ax = axes[1, 0]
         ax.plot(f_ci[:cut_idx], label="Fixed Policy", color='blue')
         ax.axhline(y=0.4, color='black', linestyle=':', label='Min (0.4)')
@@ -276,7 +251,7 @@ if __name__ == "__main__":
         ax.legend(loc='upper right')
         ax.grid(True, linestyle='--', alpha=0.6)
 
-        # 2-2. 탁도 (Fixed)
+        #탁도(Fixed)
         ax = axes[1, 1]
         ax.plot(f_turb[:cut_idx], label="Fixed Policy", color='orange')
         ax.axhline(y=2.8, color='black', linestyle=':', label='Max (2.8)')
@@ -286,7 +261,7 @@ if __name__ == "__main__":
         ax.legend(loc='upper right')
         ax.grid(True, linestyle='--', alpha=0.6)
 
-        # 2-3. pH (Fixed)
+        #pH(Fixed)
         ax = axes[1, 2]
         ax.plot(f_ph[:cut_idx], label="Fixed Policy", color='green')
         ax.axhline(y=5.8, color='black', linestyle=':', label='Min (5.8)')
@@ -297,7 +272,6 @@ if __name__ == "__main__":
         ax.legend(loc='upper right')
         ax.grid(True, linestyle='--', alpha=0.6)
 
-        # 저장
         plt.tight_layout(rect=[0, 0.03, 1, 0.95])
         plt.savefig(os.path.join(save_dir, f"{i}-3_Quality_Integrated.png"))
         plt.close()

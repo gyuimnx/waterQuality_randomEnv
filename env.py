@@ -73,7 +73,6 @@ class WaterParkEnv:
             #염소 투입 시 잔류염소 증가(10kg당 0.2mg 가정)
             residualCI += (ci_to_add / (10.0 * self.load_scale)) * 0.2
             #자원 소모 패널티
-            # reward -= 0.1 * ci_to_add
             reward_resource -= 0.25 * ci_to_add
             
             #탁도 감소(염소가 탁도를 어느정도 낮춘다고 가정, 10kg당 0.1 감소)
@@ -97,7 +96,6 @@ class WaterParkEnv:
         hour = 9 + (int(current_step) * 10) // 60
         pollution_factor = get_pollution_factor(hour)
 
-        #사람도 늘고 물도 늘면 농도는 그대로여야 해서 self.load_scale을 안곱함
         ph += random.uniform(-0.1, 0.1) * pollution_factor
         turbidity += random.uniform(0.5, 1.0) * pollution_factor
         residualCI -= random.uniform(0.05, 0.1) * pollution_factor
@@ -107,13 +105,10 @@ class WaterParkEnv:
             turbidity += 0.4
 
         #자연 복원(환경 회복)
-        # turbidity -= random.uniform(0.1, 0.3)  #입자 가라앉음
-        # residualCI -= random.uniform(0.01, 0.02)  #자연 소멸
-        # # residualCI -= 0.005
-        # 1. 캡핑(Capping): 염소가 1.2kg 넘게 있어도 효과는 1.2kg만큼만 (과잉 투입 방지)
+        #염소 지속 효과
         effective_ci = min(residualCI, 1.2) 
         
-        # 2. 탁도 감소: 자연 침전(0.1~0.2) + 염소의 지속 효과(effective_ci * 0.1)
+        #탁도 자연 침전 + 염소의 지속 효과
         turbidity -= (random.uniform(0.1, 0.2) + effective_ci * 0.1)
         #pH는 자연 복원이 거의 없다고 가정, 중성 쪽으로
         if ph > 8.2:  #염기성에서 산성
@@ -127,12 +122,6 @@ class WaterParkEnv:
         ph = max(0.0, ph)
 
         #-------------보상 계산-------------
-        # # 정상 상태 보상 (잔류염소, 탁도, pH 모두 정상 범위일 때)------------------------------------------------
-        # if 0.4 <= residualCI <= 2.0 and turbidity <= 2.8 and 5.8 <= ph <= 8.6:
-        #     reward += 0.3
-        # else:
-        #     reward -= 0.2
-            
         #잔류염소 보상
         if residualCI > 2.0:
             reward_ci -= (residualCI - 2.0) *20.0
@@ -140,9 +129,9 @@ class WaterParkEnv:
             reward_ci -= (0.4 - residualCI) *20.0
         else:
             if 0.7 <= residualCI <= 1.2:
-                reward_ci += 0.7  #이상적인 범위
+                reward_ci += 0.7 #이상적인 범위
             else:
-                reward_ci += 0.3  #그 외 정상 범위
+                reward_ci += 0.3 #그 외 정상 범위
 
         #탁도 보상
         if turbidity > 2.8:
@@ -166,7 +155,7 @@ class WaterParkEnv:
         # 이상적 범위 연속 유지 시 보너스
         if 0.7 <= residualCI <= 1.2 and turbidity <= 1.5 and 6.5 <= ph <= 8.0:
             self.stable_steps += 1
-            # 연속 안정 보너스 (최대 +0.5)
+            # 연속 안정 보너스(최대 +0.5)
             stability_bonus = min(0.5, self.stable_steps * 0.05)
             reward += stability_bonus
         else:
@@ -190,11 +179,6 @@ class WaterParkEnv:
         if current_step >= self.max_steps or self.steps >= self.max_steps: #하루가 끝났으면 에피소드 종료
             done = True
         self.done = done
-
-        # print(f"[STEP {current_step}] 현재 잔류염소={residualCI:.2f}, 현재 탁도={turbidity:.2f}, 현재 pH={ph:.2f}, "f"투입 염소={ci_to_add}kg, 계산된 Reward={reward:.2f}")
-
-        #디버깅
-        #print(f"[STEP {current_step}] Action={action}, Reward={reward:.3f}, CI={residualCI:.2f}, Turb={turbidity:.2f}, pH={ph:.2f}")
 
         return self.state.copy(), reward, done, {
             'residualCI': residualCI,
